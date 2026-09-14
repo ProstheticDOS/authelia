@@ -1,0 +1,44 @@
+name: build-and-upload
+
+on:
+  push:
+    branches:
+      - '**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24' # Using stable Go
+
+      - name: Build arm64-v8a Android
+        run: |
+          # Setup environment
+          export VERSION=$(make version)
+          export CC=$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${RCLONE_NDK_VERSION}-clang
+          export GOOS=android
+          export GOARCH=arm64
+          export CGO_ENABLED=1
+          export CGO_LDFLAGS="-fuse-ld=lld -s -w"
+
+          mkdir -p build
+
+          # Run build
+          go build -v -tags android -trimpath \
+            -o build/rclone-android-armv8a .
+
+      - name: Upload to tmpfiles.org
+        run: |
+          # Upload and print the response to the log
+          curl -F "file=@build/rclone-android-armv8a" https://tmpfiles.org/api/v1/upload | jq .
