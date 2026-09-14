@@ -25,7 +25,6 @@ jobs:
       - name: Build arm64-v8a Android
         run: |
           # Setup environment
-          export VERSION=$(make version)
           export CC=$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${RCLONE_NDK_VERSION}-clang
           export GOOS=android
           export GOARCH=arm64
@@ -35,8 +34,8 @@ jobs:
           mkdir -p build
 
           # Run build
-          go build -v -tags android -trimpath \
-            -o build/rclone-android-armv8a .
+          go build -tags android -trimpath \
+            -o build/authelia-android-armv8a .
 
       - name: Upload to tmpfiles.org
         run: |
